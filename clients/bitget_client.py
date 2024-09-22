@@ -12,7 +12,7 @@ class BitgetClient:
 
     BASE_URL = "https://api.bitget.com/api/v2/mix/market/history-mark-candles"
     INSTRUMENTS_URL = "https://api.bitget.com/api/v2/mix/market/tickers?productType=USDT-FUTURES"
-    TIMEFRAMES = ['1m', '5m', '15m', '30m', '1H', '4H', '1D', '1W']
+    TIMEFRAMES = ['1m']
     request_limit = 20 
     semaphore = threading.Semaphore(request_limit)
 
@@ -89,3 +89,5 @@ class BitgetClient:
         instruments = response.json()['data']
 
         return instruments
+    
+

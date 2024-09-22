@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, TIMESTAMP
 from sqlalchemy.orm import relationship
-from .database import Base
+from .database import Base  # Make sure to import Base
 
 # Exchange model
 class Exchange(Base):
@@ -10,7 +10,7 @@ class Exchange(Base):
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
 
-    instruments = relationship('Instrument', back_populates='exchange')
+    instruments = relationship('Instrument', back_populates='exchange', cascade='all, delete-orphan')
 
 # Instrument model
 class Instrument(Base):
@@ -18,10 +18,11 @@ class Instrument(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     symbol = Column(String, nullable=False)
+    last_price = Column(Float, nullable=True)  # Make nullable if it might not be set initially
     exchange_id = Column(Integer, ForeignKey('exchange.id'), nullable=False)
 
     exchange = relationship('Exchange', back_populates='instruments')
-    candles = relationship('Candle', back_populates='instrument')
+    candles = relationship('Candle', back_populates='instrument', cascade='all, delete-orphan')
 
 # Candle model
 class Candle(Base):
