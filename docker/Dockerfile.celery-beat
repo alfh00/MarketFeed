@@ -1,0 +1,19 @@
+# Use the same base image as your FastAPI service
+FROM python:3.9-slim-buster
+
+# Set a working directory
+WORKDIR /app
+
+# Copy the requirements file
+COPY ../requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+
+# Copy the rest of the application code
+COPY . /app
+
+# Run Celery as non-root
+ENTRYPOINT ["celery",  "beat", "--loglevel=info"]
+

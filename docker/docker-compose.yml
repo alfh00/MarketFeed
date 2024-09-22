@@ -1,0 +1,63 @@
+services:
+  fastapi:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=timescaledb  # Match the service name
+      - DB_NAME=trading_db
+      - DB_USER=trading_user
+      - DB_PASS=trading_secure_password
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - timescaledb
+      - redis
+    volumes:
+      - ..:/app  # Mount the app code from the parent directory
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg13
+    environment:
+      - POSTGRES_DB=trading_db  # Correct variable names for Timescale/Postgres
+      - POSTGRES_USER=trading_user
+      - POSTGRES_PASSWORD=trading_secure_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data  # Persist the data
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  celery:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.celery
+    depends_on:
+      - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ..:/app  # Ensure Celery has access to the app code
+
+  celery-beat:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.celery-beat
+    
+    depends_on:
+      - redis
+    volumes:
+      - ..:/app
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+volumes:
+  db-data:  # Define volume for database persistence
